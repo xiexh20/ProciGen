@@ -4,9 +4,7 @@
 ProciGen is a synthetic human-object interaction dataset with **1M+ images** of human interacting with **21k+ different objects**.
 We achieve this by procedurally combining human, object and interaction datasets together. This repo provides code to access
 and generate ProciGen dataset.  
-<p align="left">
-<img src="https://virtualhumans.mpi-inf.mpg.de/procigen-hdm/gif_procigen.gif" alt="teaser" width="80%"/>
-</p>
+https://virtualhumans.mpi-inf.mpg.de/procigen-hdm/video_procigen.mp4
 
 [//]: # (ProciGen stands for **Proc**edural **i**nteraction **Gen**eration. We procedurally combines human, object and interaction datasets together, )
 
