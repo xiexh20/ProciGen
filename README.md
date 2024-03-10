@@ -152,5 +152,6 @@ This project leverages the following excellent works, we thank the authors for o
 * The [ShapeNet](https://shapenet.org/) dataset. 
 * The [ABO](https://amazon-berkeley-objects.s3.amazonaws.com/index.html) dataset. 
 * The [Objaverse](https://objaverse.allenai.org/) dataset.
-* The [MGN](https://virtualhumans.mpi-inf.mpg.de/mgn/) human scan dataset. 
+* The [MGN](https://virtualhumans.mpi-inf.mpg.de/mgn/) human scan dataset.
+* The [ART](https://virtualhumans.mpi-inf.mpg.de/art/) repository for dense object correspondence estimation. 
 
