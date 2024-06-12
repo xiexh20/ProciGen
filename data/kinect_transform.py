@@ -121,16 +121,3 @@ class KinectTransform:
         pc = kinect.dmap2pc(depth)
         return pc
 
-
-
-class ProciGenCameras(KinectTransform):
-    """
-    For convenience, different from behave, the camera intrinsic and extrinsics are packed inside info.json file
-    """
-    def load_local2world(self):
-        "load directly from info.json file"
-
-    def load_cam_intrinsics(self):
-        "load directly from info.json file"
-
-

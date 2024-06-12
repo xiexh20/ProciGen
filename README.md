@@ -71,7 +71,7 @@ For the ProciGen dataset, we used object models from [ShapeNet](https://shapenet
 
 ### Camera Parameters
 We use the camera parameters from BEHAVE and InterCap to render the synthesized interaction. The camera intrinsic and extrinsic are saved in `<sequence>/info.json` file. 
-For more details about reading and loading, please check `data.kinect_transform.ProciGenCameras`. 
+For more details about reading and loading, please check [load intrinsics](https://github.com/xiexh20/ProciGen/blob/main/data/kinect_transform.py#L38), [extrinsics](https://github.com/xiexh20/ProciGen/blob/main/data/kinect_transform.py#L40). 
 
 ## Synthesize ProciGen
 Coming soon...
