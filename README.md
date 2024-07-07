@@ -71,7 +71,8 @@ We implement a function to get shape dataset from sequence name, see `get_shape_
 
 **Using the object pose:** given object point p at the canonical shape space, it can be transformed to the current interaction space by simply `p'=Rp + t`, where `R, t` are from entries `rot, trans` stored in the `<object_name>_fit.pkl` file. 
 
-**Example:** you can find examples on how to align from original dataset to our ProciGen in [`render/align_shapes.py`](./render/align_shapes.py).  
+**Example:** you can find examples on how to align from original dataset to our ProciGen in [`render/align_shapes.py`](./render/align_shapes.py). Note that blender needs to be installed 
+in you system for objaverse and ABO dataset. The code was tested with blender 2.91.0.
 
 
 ### Camera Parameters
@@ -80,6 +81,10 @@ For more details about reading and loading, please check [load intrinsics](https
 
 ## Synthesize ProciGen
 Coming soon...
+
+
+### Re-render ProciGen dataset 
+We save the exact SMPL and object mesh parameters in ProciGen dataset, which allows you to re-render the 
 
 ## License
 Please see [LICENSE](./LICENSE).

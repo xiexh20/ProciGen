@@ -1,6 +1,7 @@
 """
 simple test function to align object shape in canonical space to interaction space
 before usage, please download and modify the dataset paths accordingly
+for Objaverse and ABO dataset, blender needs to be installed. The code was tested on blender 2.91.0
 """
 import glob
 import sys, os
