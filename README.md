@@ -67,7 +67,12 @@ For the ProciGen dataset, we used object models from [ShapeNet](https://shapenet
 - **Objaverse shapes**: The following categories are from objaverse: backpack, basketball, all boxes, stool, suitcase, yoga ball. Similar to ABO, the `ins_name` is the `uid` in Objaverse which can be directly used to download the object model. 
 - **Shapenet shapes**: Besides ABO and Objaverse, all other sequences use shapes from ShapeNet. The ShapeNet model can be identified as `<ShapeNet_root>/<synset_id>/<ins_name>/models`. 
 
+We implement a function to get shape dataset from sequence name, see `get_shape_datasetname` in `render/utils.py`. 
+
 **Using the object pose:** given object point p at the canonical shape space, it can be transformed to the current interaction space by simply `p'=Rp + t`, where `R, t` are from entries `rot, trans` stored in the `<object_name>_fit.pkl` file. 
+
+**Example:** you can find examples on how to align from original dataset to our ProciGen in [`render/align_shapes.py`](./render/align_shapes.py).  
+
 
 ### Camera Parameters
 We use the camera parameters from BEHAVE and InterCap to render the synthesized interaction. The camera intrinsic and extrinsic are saved in `<sequence>/info.json` file. 
