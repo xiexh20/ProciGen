@@ -1,5 +1,8 @@
 """
 util functions for rendering
+
+Author: Xianghui, July 08, 2024
+Cite: Template Free Reconstruction of Human-object Interaction with Procedural Interaction Generation
 """
 
 _icap_template = {

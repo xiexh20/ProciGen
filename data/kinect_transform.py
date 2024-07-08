@@ -7,9 +7,34 @@ import sys, os
 sys.path.append(os.getcwd())
 import numpy as np
 from data.seq_utils import SeqInfo
-from data.utils import load_intrinsics, inverse_Rt, load_kinect_poses
+from data.utils import load_intrinsics, inverse_Rt, load_kinect_poses, load_kinect_poses_back
 from data.const import USE_PSBODY
 
+
+class CameraTransform:
+    "more general camera transforms between a set of calibrated cameras given calibration parameters"
+    def __init__(self, config_dir, camera_count):
+        self.camera_count = camera_count
+        self.kids = [x for x in range(camera_count)] # camera ids
+        rot, trans = load_kinect_poses(config_dir, self.kids)
+        self.local2world_R, self.local2world_t = rot, trans
+        rot, trans = load_kinect_poses_back(config_dir, self.kids)
+        self.world2local_R, self.world2local_t = rot, trans
+        self.config_dir = config_dir
+
+    def world2color(self, points, kid):
+        return np.matmul(points, self.world2local_R[kid].T) + self.world2local_t[kid]
+
+    def local2world(self, points, kid):
+        R, t = self.local2world_R[kid], self.local2world_t[kid]
+        return np.matmul(points, R.T) + t
+
+    def world2local_4x4mat(self, kid):
+        "return a 4x4 matrix for world to local transform"
+        mat = np.eye(4)
+        mat[:3, :3] = self.world2local_R[kid]
+        mat[:3, 3] = self.world2local_t[kid]
+        return mat
 
 
 class KinectTransform:

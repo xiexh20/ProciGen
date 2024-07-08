@@ -24,7 +24,7 @@ parser.add_argument(
     required=True,
     help="Path to the object file",
 )
-parser.add_argument('-of', '--output_format', default='ply', choices=['ply', 'obj'])
+parser.add_argument('-of', '--output_format', default='ply', choices=['ply', 'obj', 'glb'])
 parser.add_argument('-o', '--output_path', default='/BS/databases24/objaverse/')
 parser.add_argument('--normalize', default=False, action='store_true')
 
@@ -110,10 +110,17 @@ if __name__ == '__main__':
     object_uid = os.path.basename(args.object_path).split(".")[0]
 
     # save output
-    outfile = os.path.join(args.output_path, args.output_format+'-orig', f'{object_uid}.{args.output_format}')
+    if args.output_format in ['ply', 'obj']:
+        outfile = os.path.join(args.output_path, args.output_format+'-orig', f'{object_uid}.{args.output_format}')
+    else:
+        # glb file, by default from objaverse, it should have a /glbs/ in its full path
+        assert '/glbs/' in args.object_path, 'input glb file path is invalid!'
+        outfile = str(args.object_path).replace('/glbs/', '/glbs-normalized/')
 
     os.makedirs(os.path.dirname(outfile), exist_ok=True)
     if args.output_format == 'ply':
         bpy.ops.export_mesh.ply(filepath=outfile)
-    else:
+    elif args.output_format == 'obj':
         bpy.ops.export_mesh.obj(filepath=outfile)
+    else:
+        bpy.ops.export_scene.gltf(filepath=outfile, export_format='GLB')
