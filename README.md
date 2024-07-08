@@ -77,7 +77,7 @@ We implement a function to get shape dataset from sequence name, see `get_shape_
 **Using the object pose:** given object point p at the canonical shape space, it can be transformed to the current interaction space by simply `p'=Rp + t`, where `R, t` are from entries `rot, trans` stored in the `<object_name>_fit.pkl` file. 
 
 **Example:** you can find examples on how to align from original dataset to our ProciGen in [`render/align_shapes.py`](./render/align_shapes.py). Note that blender needs to be installed 
-in your system for objaverse and ABO dataset. The code was tested with blender 2.91. See [re-render ProciGen](#re-render-procigen-dataset-) for details about object dataset preparation.
+in your system for objaverse and ABO dataset. The code was tested with blender 2.91. See [re-render ProciGen](#re-render-procigen-dataset) for details about object dataset preparation.
 
 
 ### Camera Parameters
