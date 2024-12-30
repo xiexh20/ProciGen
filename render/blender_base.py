@@ -16,7 +16,6 @@ from mathutils import Vector
 from os.path import join
 import numpy as np
 import os.path as osp
-import open3d as o3d
 import math
 
 from data.kinect_transform import CameraTransform

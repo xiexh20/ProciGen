@@ -11,11 +11,8 @@ Cite: Template Free Reconstruction of Human-object Interaction with Procedural I
 import glob
 import json
 import sys, os
-import time
-from trimesh.visual import TextureVisuals
 
 import torch
-import trimesh
 
 
 sys.path.append(os.getcwd())

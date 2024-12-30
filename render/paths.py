@@ -11,12 +11,17 @@ ABO_ROOT = "/BS/databases23/abo-3dmodels/3dmodels" # root path to all abo glb fi
 PROCIGEN_ROOT = '/BS/databases24/ProciGen/' # root path to procigen sequences
 MGN_ROOT = '/BS/databases24/mgn-smpld' # root path to SMPLD of MGN scans, format of texture image: ROOT/scan_id/scan_id.png
 
-PROCIGEN_ASSET_ROOT = 'assets' # root path to additional procigen assets
+PROCIGEN_ASSET_ROOT = '/BS/xxie-6/static00/ProciGen-assets' # root path to additional procigen assets
+
+BEHAVE_OBJECTS_ROOT = '/BS/xxie-5/static00/behave_release/objects' # path to BEHAVE templates, from this file: https://datasets.d2.mpi-inf.mpg.de/cvpr22behave/objects.zip
+BEHAVE_CORR_ROOT = f'{PROCIGEN_ASSET_ROOT}/corr-behave-objs' # path to the correspondence points for behave objects
 
 # paths for object shape datasets, these files can be downloaded, see
-ABO_MESHES_ROOT = '' # path to abo exported meshes
 SHAPENET_SIMPLIFIED_ROOT = '/BS/databases24/ShapeNetV2-simplified'  # path to simplified mesh path
-OBJAVERSE_MESHES_ROOT = ''
+ABO_MESHES_ROOT = SHAPENET_SIMPLIFIED_ROOT # path to abo exported meshes
+OBJAVERSE_MESHES_ROOT = SHAPENET_SIMPLIFIED_ROOT
+
+NEWSHAPE_CORR_ROOT = '/BS/xxie-2/static00/shapenet/' # root path to autoencoder output files for new object shapes
 
 class ScanPath:
     "handling scan paths"
