@@ -92,8 +92,8 @@ class SMPLHGenerator:
             pose_init[:, :pose_param_num] = torch.tensor(poses, dtype=torch.float32)
             pose_init[:, SMPLH_HANDPOSE_START:] = torch.tensor(mean_hand_pose(SMPL_ASSETS_ROOT), dtype=torch.float)
         else:
-            pose_init = torch.tensor(poses, dtype=torch.float32)
-        betas = torch.tensor(betas, dtype=torch.float32)
-        smplh = SMPLPyTorchWrapperBatch(SMPL_MODEL_ROOT, batch_sz, betas, pose_init, trans,
+            pose_init = torch.Tensor(poses, dtype=torch.float32)
+        betas = torch.Tensor(betas, dtype=torch.float32)
+        smplh = SMPLPyTorchWrapperBatch(SMPL_MODEL_ROOT, batch_sz, betas.cpu(), pose_init.cpu(), trans.cpu(),
                                         gender=gender, num_betas=10, hands=True, device=device).to(device)
         return smplh

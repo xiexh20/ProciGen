@@ -31,7 +31,7 @@ import render.paths as paths
 from render.blender_base import BaseRenderer, bpy_version
 from render.utils import get_shape_datasetname
 from lib_smpl import get_smpl
-from render.mesh import MyMesh
+from lib_mesh.mesh import Mesh
 
 
 class BlenderRerenderer(BaseRenderer):
@@ -107,7 +107,7 @@ class BlenderRerenderer(BaseRenderer):
             scan_folder = osp.join(paths.MGN_ROOT, scan_name)
             scan_path = paths.ScanPath(scan_folder)
             # load texture uv maps, replacing this with trimesh will result in incorrect uv map
-            scan_smpld = MyMesh()
+            scan_smpld = Mesh()
             scan_smpld.load_from_obj(scan_path.smpld_reg_obj())
             scan_smpld.v = smpld_vertices[0].numpy()
 

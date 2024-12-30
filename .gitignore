@@ -6,6 +6,7 @@ __pycache__/
 *$py.class
 
 scripts
+debug
 
 # C extensions
 *.so
