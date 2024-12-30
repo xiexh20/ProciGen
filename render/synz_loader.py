@@ -17,7 +17,7 @@ import render.paths as paths
 
 class SynzResultLoader:
     "load parameters from the results of synz/synz_batch.py, with possibly some augmentations"
-    def __init__(self, params_folder, newshape_root, procigen_asset_root, verbose=False):
+    def __init__(self, params_folder, newshape_root, procigen_asset_root, source, verbose=False):
         """
 
         :param params_folder: path to optimized H+O parameters, output from synz_batch
@@ -25,6 +25,7 @@ class SynzResultLoader:
         :param newshape_root: root path to the meshes of new shapes
         :type newshape_root: str
         :param procigen_asset_root: root path to some asset files
+        :param source: object shape dataset name
         """
         param_files = self.glob_param_files(params_folder)
         self.param_files = param_files
@@ -39,6 +40,7 @@ class SynzResultLoader:
         self.landmark = BodyLandmarks(paths.PROCIGEN_ASSET_ROOT)
         self.scan_geners = json.load(open(f'{procigen_asset_root}/mgn-scan-gender.json'))
         self.verbose = verbose
+        self.source = source
 
     def load(self, smpld_file):
         """
@@ -138,11 +140,21 @@ class SynzResultLoader:
 
     def load_obj_mesh(self, ho_params):
         """
-        load a shapenet object mesh, without doing any transformation
+        load  mesh of the new object shape, without doing any transformation
+        these meshes are self processed mesh files, they are packed in a tar file
+        how these meshes are obtained?
+            -shapenet: first waterproof the mesh, then simplify them
+            -objaverse and abo: export the mesh from glb file, waterproof and then simplify
         :param ho_params: parameters from synthesized H+O
         :return:
         """
-        obj_file = osp.join(self.newshape_root, ho_params['synset_id'], ho_params['ins_name'], 'models/model_normalized.obj')
+        if self.source == 'shapenet':
+            obj_file = osp.join(self.newshape_root, ho_params['synset_id'], ho_params['ins_name'], 'models/model_normalized.obj')
+        elif self.source == 'abo':
+            obj_file = osp.join(self.newshape_root, 'abo-watertight', ho_params['ins_name'] + "_fused.obj")
+        else:
+            # this is for /BS/databases24/objaverse/classified-plys
+            obj_file = osp.join(self.newshape_root, ho_params['synset_id'], ho_params['ins_name'] + ".ply")
         if self.verbose:
             print("Loading new object shape from", obj_file)
         obj_mesh = Mesh(filename=obj_file)
