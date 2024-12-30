@@ -134,9 +134,9 @@ class BlenderRerenderer(BaseRenderer):
         parser.add_argument('-s', '--seq_folder', help='path to one ProciGen sequence')
         parser.add_argument('-o', '--out_dir', default='/BS/xxie-6/static00/test')
         parser.add_argument('-fs', '--start', default=0, type=int)
-        parser.add_argument('-fe', '--end', default=None, type=int)
+        parser.add_argument('-fe', '--end', default=10, type=int)
 
-        # Render parameters
+        # Render parameters, for behave use x:y=4:3, for InterCap use x:y=16:9
         parser.add_argument('-resox', type=int, default=2048)
         parser.add_argument('-resoy', type=int, default=1536)
 

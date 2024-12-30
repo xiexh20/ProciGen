@@ -78,7 +78,7 @@ class BaseRenderer:
         bpy.context.scene.render.image_settings.quality = 100
 
         # Build scene
-        bpy.context.scene.world.color = (0, 0, 0)
+        bpy.context.scene.world.color = (1.0, 1.0, 1.0) if bpy_version >= '3.0' else (0, 0, 0) # bpy 3.0+ seems to have different ambient color setting
         bpy.context.scene.render.film_transparent = True
         self.init_lights(depth=2.5)
         bpy.context.scene.world.light_settings.use_ambient_occlusion = True  # enable ambient light
@@ -104,7 +104,8 @@ class BaseRenderer:
         render_layer = scene_node_tree.nodes.new(type="CompositorNodeRLayers")
         output_rgb = scene_node_tree.nodes.new(type="CompositorNodeOutputFile")
         # for bpy>3.0, empty means ./, hence we need / to use abs path. if set to empty, will be /tmp/
-        output_rgb.base_path = '/' if bpy_version > '3.0' else ''
+        # output_rgb.base_path = '/' if bpy_version > '3.0' and bpy_version < '4.0' else ''
+        output_rgb.base_path = ''
         output_rgb.file_slots[0].use_node_format = True
         output_rgb.format.file_format = "JPEG" if self.ext == 'jpg' else "PNG"
         output_rgb.format.color_mode = 'RGB'
@@ -112,7 +113,8 @@ class BaseRenderer:
         self.render_layer, self.output_rgb = render_layer, output_rgb  # save for later manipulation
 
         output_depth = scene_node_tree.nodes.new(type="CompositorNodeOutputFile")
-        output_depth.base_path = '/' if bpy_version > '3.0' else ''
+        # output_depth.base_path = '/' if bpy_version > '3.0' and bpy_version < '4.0' else ''
+        output_depth.base_path = ''
         output_depth.file_slots[0].use_node_format = True
         output_depth.format.file_format = "OPEN_EXR"
         output_depth.format.color_depth = '16'
