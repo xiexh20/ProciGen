@@ -21,6 +21,7 @@ from lib_smpl.smpl_generator import SMPLHGenerator
 from lib_smpl.wrapper_pytorch import SMPLPyTorchWrapperBatchSplitParams
 from lib_mesh.mesh import Mesh
 from synz.synz_base import BaseSynthesizer
+import render.paths as paths
 
 
 class BatchSynthesizer(BaseSynthesizer):
@@ -593,7 +594,7 @@ class BatchSynthesizer(BaseSynthesizer):
         return parser
 
 def main():
-    from synz.mesh_paths import get_template_path, get_corr_mesh_file
+    from synz.mesh_paths import get_template_path, get_corr_mesh_file # TODO: update these path as relative paths
 
     parser = BatchSynthesizer.get_parser()
     args = parser.parse_args()
@@ -607,7 +608,7 @@ def main():
     args.object = 'chairblack'
     args.source = 'shapenet'
     args.newshape_category = 'chair'
-    args.outfolder = f'outputs/test-{args.object}'
+    args.outfolder = f'outputs/params/test-{args.object}'
     args.batch_size = 16
     args.iterations = 500
     args.end = 64

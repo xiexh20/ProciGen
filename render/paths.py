@@ -9,8 +9,14 @@ SHAPENET_ROOT = '/BS/databases19/ShapeNet/ShapeNetCore.v2' # root to shapenet, f
 OBJAVERSE_ROOT = '/BS/databases24/objaverse' # ROOT path to objaverse, this is used to save exported ply file
 ABO_ROOT = "/BS/databases23/abo-3dmodels/3dmodels" # root path to all abo glb files, format: ROOT/model_uid.glb
 PROCIGEN_ROOT = '/BS/databases24/ProciGen/' # root path to procigen sequences
-MGN_ROOT = '/BS/xxie-6/static00/mgn-smpld' # root path to SMPLD of MGN scans, format of texture image: ROOT/scan_id/scan_id.png
+MGN_ROOT = '/BS/databases24/mgn-smpld' # root path to SMPLD of MGN scans, format of texture image: ROOT/scan_id/scan_id.png
 
+PROCIGEN_ASSET_ROOT = 'assets' # root path to additional procigen assets
+
+# paths for object shape datasets, these files can be downloaded, see
+ABO_MESHES_ROOT = '' # path to abo exported meshes
+SHAPENET_SIMPLIFIED_ROOT = '/BS/databases24/ShapeNetV2-simplified'  # path to simplified mesh path
+OBJAVERSE_MESHES_ROOT = ''
 
 class ScanPath:
     "handling scan paths"

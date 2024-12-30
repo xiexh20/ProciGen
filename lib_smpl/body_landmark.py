@@ -30,12 +30,13 @@ def load_regressors(assets_root, batch_size=None):
 
 class BodyLandmarks:
     "SMPL wrapper to compute body landmarks with SMPL meshes"
-    def __init__(self, assets_root):
+    def __init__(self, assets_root, load_parts=False):
         br, fr, hr = load_regressors(assets_root)
         self.body25_reg = br
         self.face_reg = fr
         self.hand_reg = hr
-        self.parts_inds = self.load_parts_ind(p=join(assets_root, 'smpl_parts_dense.pkl'))
+        if load_parts:
+            self.parts_inds = self.load_parts_ind(p=join(assets_root, 'smpl_parts_dense.pkl'))
 
     def get_landmarks(self, smpl_mesh:Mesh):
         """

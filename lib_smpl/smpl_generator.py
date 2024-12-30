@@ -65,6 +65,9 @@ class SMPLHGenerator:
 
         betas, pose, trans = beta_init, pose_init, centers  # init SMPL with the translation
 
+        if offsets is not None and isinstance(offsets, np.ndarray):
+            offsets = torch.from_numpy(offsets)
+
         smplh = SMPLPyTorchWrapperBatch(SMPL_MODEL_ROOT, batch_sz, betas, pose, trans, offsets,
                                         gender=gender, num_betas=10, hands=True, device=device).to(device)
 

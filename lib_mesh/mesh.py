@@ -10,7 +10,7 @@ from . import colors
 from . import search
 from . import serialization
 
-# from . import landmarks
+from . import landmarks
 from . import texture
 from . import processing
 

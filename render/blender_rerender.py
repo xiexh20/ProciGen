@@ -51,50 +51,7 @@ class BlenderRerenderer(BaseRenderer):
             params_obj = pkl.load(open(f'{frame}/{obj_name}/fit01/{obj_name}_fit.pkl', 'rb'))
             params_hum = pkl.load(open(f'{frame}/person/fit01/person_fit.pkl', 'rb'))
 
-            # Prepare object loading
-            obj_mat = np.eye(4) # transform matrix for object
-            obj_mat[:3, :3] = params_obj['rot']
-            obj_mat[:3, 3] = params_obj['trans']
-            # load object into blender
-            synset_id, ins = params_obj['synset_id'], params_obj['ins_name']
-            blender_name_hum, blender_name_obj = 'procigen-hum', 'procigen-obj'
-            if dname == 'shapenet':
-                # simply apply the parameter
-                mesh_file = osp.join(paths.SHAPENET_ROOT, synset_id, ins, 'models/model_normalized.obj')
-                bpy.ops.import_scene.obj(filepath=mesh_file, axis_forward='Y', axis_up='Z')
-                obj_object = bpy.context.selected_objects[-1]
-                obj_object.name = blender_name_obj  # specify the name for the imported one
-                bpy.ops.object.shade_smooth()
-                obj = bpy.data.objects[blender_name_obj]  # reselect
-                obj.select_set(True)
-                self.mesh_names.append(blender_name_obj)  # this allows deletion
-                self.apply_transform(obj, obj_mat) # now apply transformation to the object
-            elif dname == 'objaverse':
-                # use objaverse lib to get path
-                import objaverse
-                uids = [ins]
-                # Get local glb file path, if non-existent, will download using uid.
-                # Warning: objaverse downloads are saved to home directory by default, if that is not desired,
-                # change the BASE_PATH in objaverse.__init__.py file.
-                objs = objaverse.load_objects(uids, download_processes=1)
-                obj_values = list(objs.values())
-                assert len(obj_values) == 1, f'invalid object paths found: {obj_values}'
-                glb_path = obj_values[0]
-                # Note: the saved object transformation is always w.r.t normalized object meshes
-                # Option 1: do normalization inside blender after loading
-                self.add_glb_object(glb_path, obj_mat, normalize=True)
 
-                # Option 2: export a normalized glb file, and reload to blender, should also work.
-                # export a normalized glb file
-                # glb_path_norm = str(glb_path).replace('/glbs/', '/glbs-normalized/')
-                # if not osp.isfile(glb_path_norm):
-                #     cmd = f'blender -b -P render/blender_export.py -- --object_path {glb_path} --normalize --output_format glb'
-                #     os.system(cmd)
-                # self.add_glb_object(glb_path_norm, obj_mat, normalize=False)
-            else:
-                # Note: for abo dataset, the saved object transformation is w.r.t original glb file, w/o further processing.
-                glb_path = f'{paths.ABO_ROOT}/{ins}.glb'
-                self.add_glb_object(glb_path, obj_mat, normalize=False)
 
             # Prepare human (SMPLD) vertices
             smpld_model = smpld_female if params_hum['gender'] == 'female' else smpld_male
@@ -111,62 +68,64 @@ class BlenderRerenderer(BaseRenderer):
             scan_smpld.load_from_obj(scan_path.smpld_reg_obj())
             scan_smpld.v = smpld_vertices[0].numpy()
 
-            # add human to blender by saving and reloading directly from blender
+            # Output folder
             frame_folder = osp.join(seq_out, osp.basename(frame[:-1]))
-            os.makedirs(frame_folder, exist_ok=True)
-            scan_smpld.write_obj(osp.join(frame_folder, f'k1.human.obj'))
-            self.add_textured_mesh_from_file(osp.join(frame_folder, f'k1.human.obj'), scan_path.smpld_texture(), blender_name_hum)
 
-            # now render
-            bpy_hum = bpy.data.objects[blender_name_hum]
-            for k in range(self.camera_count):
-                # set output path
-                self.output_rgb.file_slots[0].path = join(frame_folder, f'k{k}.color.')
-                self.output_depth.file_slots[0].path = join(frame_folder, f'k{k}.depth.')
+            self.render_frame(dname, frame_folder, params_obj, scan_path, scan_smpld)
 
-                # transform human and objects to local camera
-                transform = self.cam_transform.world2local_4x4mat(k)
-                self.transforom_hum_obj_local(transform)  # both human and object
-
-                # set human to invisible, render object full mask
-                bpy_hum.hide_render = True
-                bpy.ops.render.render(write_still=True)
-                # bpy.ops.wm.save_as_mainfile(filepath=join(frame_folder, f'k{k}.debug.blend'))
-                depth_obj = cv2.imread(join(frame_folder, f'k{k}.depth.0001.exr'), cv2.IMREAD_UNCHANGED)[:, :, 0]
-
-                # make human visible again, render human + object
-                bpy_hum.hide_render = False
-                bpy.ops.render.render(write_still=True)
-                depth_full = cv2.imread(join(frame_folder, f'k{k}.depth.0001.exr'), cv2.IMREAD_UNCHANGED)[:, :, 0]
-
-                self.format_outfiles(depth_full, depth_obj, frame_folder, k)
-                os.system(f"rm {join(frame_folder, f'k{k}.depth.0001.exr')}")
-
-                # transform back to k1
-                self.transforom_hum_obj_local(np.linalg.inv(transform))
-
-            self.reset_scene()
-            os.system(f"rm {join(frame_folder, f'k1.human.obj')}")
-            self.reinit_light()
-
-    def add_glb_object(self, glb_path, obj_mat, normalize):
+    def render_frame(self, dname, frame_folder, params_obj, scan_path, scan_smpld):
         """
-        load object from a glb file
-        :param glb_path: glb file path
-        :param obj_mat: the transformation applied to the object after loading
-        :param normalize: normalize the scene or not, for objaverse, it should be normalized
+        render multi-view of a single frame
+        :param dname: dataset name of the object, shapenet/objaverse/abo
+        :param frame_folder: output folder path
+        :param params_obj: a dict of object parameters, where rot and trans denotes the object transformation
+        :type params_obj: dict
+        :param scan_path:
+        :param scan_smpld:
         :return:
+        :rtype:
         """
-        bpy.ops.import_scene.gltf(filepath=glb_path, merge_vertices=True)
-        if normalize:
-            # this normalization
-            self.normalize_scene()  # do not do normalization, since the glb file is already normalized!
-        # apply transform to the object
-        for obj in self.scene_root_objects():
-            if obj.type in ["CAMERA", 'LIGHT']:
-                continue  # do not change lighting or camera!
-            original_mat = np.array(obj.matrix_world)
-            obj.matrix_world = (obj_mat @ original_mat).T
+        # Import object into blender
+        obj_mat = np.eye(4)  # transform matrix for object
+        obj_mat[:3, :3] = params_obj['rot']
+        obj_mat[:3, 3] = params_obj['trans']
+        synset_id, ins = params_obj['synset_id'], params_obj['ins_name']
+        blender_name_hum = self.import_object2blender(dname, ins, obj_mat, synset_id)
+        # add human to blender by saving and reloading directly from blender
+        os.makedirs(frame_folder, exist_ok=True)
+        scan_smpld.write_obj(osp.join(frame_folder, f'k1.human.obj'))
+        self.add_textured_mesh_from_file(osp.join(frame_folder, f'k1.human.obj'), scan_path.smpld_texture(),
+                                         blender_name_hum)
+        # now render
+        bpy_hum = bpy.data.objects[blender_name_hum]
+        for k in range(self.camera_count):
+            # set output path
+            self.output_rgb.file_slots[0].path = join(frame_folder, f'k{k}.color.')
+            self.output_depth.file_slots[0].path = join(frame_folder, f'k{k}.depth.')
+
+            # transform human and objects to local camera
+            transform = self.cam_transform.world2local_4x4mat(k)
+            self.transforom_hum_obj_local(transform)  # both human and object
+
+            # set human to invisible, render object full mask
+            bpy_hum.hide_render = True
+            bpy.ops.render.render(write_still=True)
+            # bpy.ops.wm.save_as_mainfile(filepath=join(frame_folder, f'k{k}.debug.blend'))
+            depth_obj = cv2.imread(join(frame_folder, f'k{k}.depth.0001.exr'), cv2.IMREAD_UNCHANGED)[:, :, 0]
+
+            # make human visible again, render human + object
+            bpy_hum.hide_render = False
+            bpy.ops.render.render(write_still=True)
+            depth_full = cv2.imread(join(frame_folder, f'k{k}.depth.0001.exr'), cv2.IMREAD_UNCHANGED)[:, :, 0]
+
+            self.format_outfiles(depth_full, depth_obj, frame_folder, k)
+            os.system(f"rm {join(frame_folder, f'k{k}.depth.0001.exr')}")
+
+            # transform back to k1
+            self.transforom_hum_obj_local(np.linalg.inv(transform))
+        self.reset_scene()
+        os.system(f"rm {join(frame_folder, f'k1.human.obj')}")
+        self.reinit_light()
 
     @staticmethod
     def get_parser():
