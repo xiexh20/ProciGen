@@ -17,7 +17,7 @@ python render/blender_rerender.py -s /path/to/procigen/Date04_Subxx_monitor_synz
 ```
 
 ### Synthesize more objects 
-**Data**: download the quick start data. We prepare data for more objects, download them from xxx. Once download, replace the demo assets with full assets:
+**Data**: download the quick start data. We prepare data for more objects, download them from [here](https://edmond.mpg.de/file.xhtml?fileId=263842&version=7.0). Once download, replace the demo assets with full assets:
 ```shell
 rm -r example/assets
 unzip ProciGen-assets.zip -d example/assets
@@ -37,6 +37,9 @@ python render/render_hoi.py -p <your params output> -src abo --obj_name tablesma
 python synz/synz_batch.py -src objaverse --object_category box -obj boxlarge -s "*boxlarge*" -o <your params output>
 python render/render_hoi.py -p <your params output> -src objaverse --obj_name boxlarge -o <your render output>
 ```
+
+Note that the examples above sample interaction from BEHAVE 30fps data, which does not include the basketball and keyboard sequences. For these two objects, you can download the first
+version of BEHAVE, from this url. 
 
 ### Synthesize beyond the shapes used by ProciGen
 train AE for your own object shapes, process the shapes. coming soon...
