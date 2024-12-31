@@ -8,24 +8,26 @@ from os.path import join, dirname, basename
 SHAPENET_ROOT = '/BS/databases19/ShapeNet/ShapeNetCore.v2' # root to shapenet, format: ROOT/synset_id/ins_name/model/model_normalized.obj
 OBJAVERSE_ROOT = '/BS/databases24/objaverse' # ROOT path to objaverse, this is used to save exported ply file
 ABO_ROOT = "/BS/databases23/abo-3dmodels/3dmodels" # root path to all abo glb files, format: ROOT/model_uid.glb
-PROCIGEN_ROOT = '/BS/databases24/ProciGen/' # root path to all procigen sequences
-MGN_ROOT = '/home/ubuntu/Downloads//mgn-smpld' # root path to SMPLD of MGN scans, format of texture image: ROOT/scan_id/scan_id.png
+PROCIGEN_ROOT = 'example/ProciGen' # root path to all procigen sequences
+MGN_ROOT = 'example/mgn-smpld' # root path to SMPLD of MGN scans, format of texture image: ROOT/scan_id/scan_id.png
 
-PROCIGEN_ASSET_ROOT = '/home/ubuntu/Downloads/ProciGen-assets-demo' # root path to additional procigen assets, modify this to downloaded ProciGen-assets.tar
-SMPL_ASSETS_ROOT = PROCIGEN_ASSET_ROOT
-SMPL_MODEL_ROOT = "/home/ubuntu/Downloads/smplh"
 
-BEHAVE_OBJECTS_ROOT = '/home/ubuntu/Downloads/behave_objects/objects' # path to BEHAVE templates, from this file: https://datasets.d2.mpi-inf.mpg.de/cvpr22behave/objects.zip
-BEHAVE_PARAMS_ROOT = '/home/ubuntu/Downloads/behave-30fps' # path to BEHAVE parameters, from https://datasets.d2.mpi-inf.mpg.de/cvpr22behave/behave-30fps-params-v1.tar
-
+# assets for synthesizing new interaction
+PROCIGEN_ASSET_ROOT = 'example/assets' # root path to additional procigen assets, modify this to downloaded ProciGen-assets.tar
+BEHAVE_OBJECTS_ROOT = 'example/behave/objects' # path to BEHAVE templates, from this file: https://datasets.d2.mpi-inf.mpg.de/cvpr22behave/objects.zip
+BEHAVE_PARAMS_ROOT = 'example/behave/params' # path to BEHAVE parameters, from https://datasets.d2.mpi-inf.mpg.de/cvpr22behave/behave-30fps-params-v1.tar
 BEHAVE_CORR_ROOT = f'{PROCIGEN_ASSET_ROOT}/corr-behave-objs' # path to the correspondence points for behave objects
+NEWSHAPE_CORR_ROOT = f'{PROCIGEN_ASSET_ROOT}/corr-new-shapes' # root path to autoencoder output files for new object shapes
 
-# paths for object shape datasets, these files can be downloaded, see
+# paths for object shape datasets,
 SHAPENET_SIMPLIFIED_ROOT = f'{PROCIGEN_ASSET_ROOT}/new-shape-meshes'  # path to simplified mesh path
 ABO_MESHES_ROOT = SHAPENET_SIMPLIFIED_ROOT # path to abo exported meshes
 OBJAVERSE_MESHES_ROOT = SHAPENET_SIMPLIFIED_ROOT
 
-NEWSHAPE_CORR_ROOT = f'{PROCIGEN_ASSET_ROOT}/corr-new-shapes' # root path to autoencoder output files for new object shapes
+# SMPL related paths
+SMPL_ASSETS_ROOT = PROCIGEN_ASSET_ROOT
+SMPL_MODEL_ROOT = "example/smplh"
+
 
 class ScanPath:
     "handling scan paths"

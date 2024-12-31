@@ -23,17 +23,47 @@ and generate ProciGen dataset.
 ### TODO List
 - [x] Dataset download links.
 - [x] Dataset structure.
+- [x] Contact transfer and optimization.
+- [x] Render new human object interaction.
 - [ ] Autoencoder to compute dense correspondence. 
-- [ ] Contact transfer and optimization.
-- [ ] Render new human object interaction.
 - [x] Re-render ProciGen interaction images. 
 
 ### Updates
-
+- Dec 31, 2024. Code to synthesize and render interaction released! 
 - July 08, 2024. Code to align objects and re-render ProciGen dataset released! 
 
 ## Dependencies
-The code is tested on `python 3.8.16, Debian 10`. The runtime environment is the same as HDM, please follow the instructions [here](https://github.com/xiexh20/HDM#dependencies).
+This code is tested on `python 3.10, ubuntu 22.04`. See below for details on installing runtime environment.
+
+If you want to only re-render the ProciGen sequences, the following steps are sufficient:
+```shell 
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install bpy==3.5.0
+pip install git+https://github.com/mattloper/chumpy # compatible with newer numpy version 
+pip install opencv-python trimesh tqdm open3d objaverse imageio-ffmpeg
+```
+Additional dependencies for synthesizing new interactions:
+```shell
+conda install -c conda-forge igl
+# Install pytorch3d 
+pip install iopath
+pip install --no-index --no-cache-dir pytorch3d -f 'https://dl.fbaipublicfiles.com/pytorch3d/packaging/wheels/py310_cu121_pyt251/download.html' 
+```
+Install [Mesh intersection library](https://github.com/vchoutas/torch-mesh-isect): (this works for cuda 10, 11, and 12.)
+```shell
+export CHORE_PATH=${PWD}
+git clone https://github.com/NVIDIA/cuda-samples.git external/cuda-samples
+export CUDA_SAMPLES_INC=${CHORE_PATH}/external/cuda-samples/Common/
+git clone https://github.com/vchoutas/torch-mesh-isect external/torch-mesh-isect
+cp external/torch-mesh-isect/include/double_vec_ops.h external/torch-mesh-isect/src/
+```
+Add these lines to `external/torch-mesh-isect/src/bvh.cpp` before `AT_CHECK` is defined, i.e. [this line](https://github.com/vchoutas/torch-mesh-isect/blob/master/src/bvh.cpp#L24) ([reference](https://github.com/vchoutas/torch-mesh-isect/issues/23)):
+```cpp
+#ifndef AT_CHECK 
+#define AT_CHECK TORCH_CHECK 
+#endif 
+```
+finally run `pip install external/torch-mesh-isect/`
 
 ## Dataset Structure
 
@@ -74,44 +104,55 @@ For the ProciGen dataset, we used object models from [ShapeNet](https://shapenet
 
 We implement a function to get shape dataset from sequence name, see `get_shape_datasetname` in `render/utils.py`. 
 
-**Using the object pose:** given object point p at the canonical shape space, it can be transformed to the current interaction space by simply `p'=Rp + t`, where `R, t` are from entries `rot, trans` stored in the `<object_name>_fit.pkl` file. 
+**Using the object pose:** given object point p at the canonical shape space, it can be transformed to the current interaction space by simply `p'=Rp + t`, where `R, t` are from entries `rot, trans` stored in the `<object_name>_fit.pkl` file.  
 
 **Example:** you can find examples on how to align from original dataset to our ProciGen in [`render/align_shapes.py`](./render/align_shapes.py). Note that blender needs to be installed 
-in your system for objaverse and ABO dataset. The code was tested with blender 2.91. See [re-render ProciGen](#re-render-procigen-dataset) for details about object dataset preparation.
+in your system for objaverse and ABO dataset. The code was tested with blender 2.91 and 3.5. See [re-render ProciGen](#re-render-procigen-dataset) for details about object dataset preparation.
 
 
 ### Camera Parameters
 We use the camera parameters from BEHAVE and InterCap to render the synthesized interaction. The camera intrinsic and extrinsic are saved in `<sequence>/info.json` file. 
-For more details about reading and loading, please check [load intrinsics](https://github.com/xiexh20/ProciGen/blob/main/data/kinect_transform.py#L38), [extrinsics](https://github.com/xiexh20/ProciGen/blob/main/data/kinect_transform.py#L40). 
+For more details about reading and loading, please check [load intrinsics](https://github.com/xiexh20/ProciGen/blob/main/data/kinect_transform.py#L38), [extrinsics](https://github.com/xiexh20/ProciGen/blob/main/data/kinect_transform.py#L40).
 
 ## Synthesize ProciGen
-Coming soon...
+We provide quick start example below, for more advanced usage, please refer to [synthesize ProciGen](./synz/synthesize_procigen.md).
+
+### Data preparation
+We provide some mini examples for quick start, this allows you to test re-render ProciGen dataset, synthesize and render interaction with new human and objects. Download it with:
+```shell
+bash scripts/download_demo.sh
+```
+**SMPLH body model**: We use SMPL-H (mano_v1.2) from [this website](https://mano.is.tue.mpg.de/download.php). Download and unzip to a local path and modify in `SMPL_MODEL_ROOT` in `paths.py`.
 
 
 ### Re-render ProciGen dataset 
-We save the exact SMPL and object mesh parameters in ProciGen dataset, which allows you to re-render the interaction with texture as much as you want. The main entry for this is [`render/blender_rerender.py`](./render/blender_rerender.py).
-Follow the steps below to use it. 
-
-**Additional dependencies**: `pip install objaverse chumpy` and `pip install bpy==2.91a0`. Note that bpy v2.91a0 is only compatible with python 3.7, if you have other python version, 
-please check [version history](https://pypi.org/project/bpy/2.91a0/#history) to see which bpy fits your env. The code can run in both blender 2.91 and 3.5. However, we observe much darker image using bpy3.5, which requires further tuning of the lights. 
-Therefore we recommend 2.8<=bpy<3.0 with current lighting. 
-
-**Download object shape datasets**: we use shapes form ShapeNet, Objaverse, and ABO dataset. Depending on your interests, you may download one or many of these datasets. 
-- ShapeNet: Download from [here](https://shapenet.org/login/). Unzip and change `SHAPENET_ROOT` in `render/paths.py` to local path. 
-- Objavers: No need to pre-download, just install the objaverse library and objects will be downloaded automatically. Warning: objaverse downloads are saved to home directory (`~/.objaverse`), 
-modify the BASE_PATH in `objaverse.__init__.py` if that is not desired. 
-- ABO: Download from [ABO website](https://amazon-berkeley-objects.s3.amazonaws.com/index.html#download). We use only the [3D models](https://amazon-berkeley-objects.s3.amazonaws.com/archives/abo-3dmodels.tar). Download, unzip, and modify `ABO_ROOT` in `render/paths.py` to local path.  
-
-
-**Download SMPL-D registrations for MGN**: We provide the SMPLD texture uv and images for the scans of [MGN dataset](https://virtualhumans.mpi-inf.mpg.de/mgn/), you can download it [here](https://edmond.mpg.de/file.xhtml?fileId=252396&version=5.0). Modify the `MGN_ROOT` in `render/paths.py`. 
-
-
-**Download body model**: We use SMPL-H (mano_v1.2) from [this website](https://mano.is.tue.mpg.de/download.php). Download and unzip to a local path and modify in `SMPL_MODEL_ROOT` in `lib_smpl/const.py`. 
-
-**Example command**: to render 5 frames using original ProciGen cameras.    
+To render the sequence downloaded from demo data, run
 ```shell
-python render/blender_rerender.py -s /path/to/procigen/Date04_Subxx_monitor_synzv2-01  -fe 5 
+python render/blender_rerender.py -s example/ProciGen/Date04_Subxx_stool_batch01 -o outputs/rerender
 ```
+This will save the re-rerendered images to `outputs/rerender`. Use `-s <ProciGen sequence path>` to re-render any other sequence. 
+
+### Synthesize interaction with new shapes
+With the demo data downloaded, run:
+```shell
+python synz/synz_batch.py --mode demo
+```
+This will sample 16 interactions from BEHAVE stool sequence and synthesize their interaction with new stool shapes. Results will be saved to `outputs/params`.
+
+### Render newly synthesized interaction 
+To render new interactions, run:
+```shell
+python render/render_hoi.py -p outputs/params/test-stool --source objaverse --obj_name stool -o outputs/render
+```
+This will render the synthesized interactions to `outputs/render`. 
+
+### Advanced usage
+For synthesizing or re-rendering more objects from other datasets, please refer to [synthesize ProciGen](./synz/synthesize_procigen.md).
+
+
+### Trouble shots
+If you encounter `segmentation fault` when running `synz/synz_batch.py`, please check if the installed numpy version is lower than 2.0.
+Open3d has problem with newer numpy versions, downgrade to numpy `1.26.4` could potentially solve this problem. 
 
 ## License
 Please see [LICENSE](./LICENSE).

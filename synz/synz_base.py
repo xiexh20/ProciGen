@@ -88,7 +88,7 @@ class BaseSynthesizer:
                               "skateboard": "04225987",
                               "plasticcontainer": "02801938",  # selected from basket category
 
-                              # ABO  objects
+                              # ABO categories
                               "abo-chair": 'abo-chair',
                               'abo-table': 'abo-table',  # map to the keys stored in abo-all.json
                               "obja-chair": "obja-chair"

@@ -577,8 +577,8 @@ class BatchSynthesizer(BaseSynthesizer):
         parser.add_argument('-fs', '--start', type=int, default=0)
         parser.add_argument('-fe', '--end', type=int, default=None)
         parser.add_argument('-obj', '--object', default='chairblack', type=str, help='object name of the original dataset')
-        parser.add_argument('-sr', '--newshape_root', default="/mnt/d2/data/ShapenetV2/", help='root path to new object shape meshes')
-        parser.add_argument('-scr', '--newshape_corr_root', default="/BS/xxie-2/static00/shapenet/",
+        parser.add_argument('-sr', '--newshape_root', default="example/assets/new-shape-meshes", help='root path to new object shape meshes')
+        parser.add_argument('-scr', '--newshape_corr_root', default="example/assets/corr-new-shapes",
                             help='root path to new object shape correspondence points')
         parser.add_argument('-cat', '--object_category', help='object category name for shapenet/objaverse/abo')
         parser.add_argument('-o', '--outfolder', default='outputs')
@@ -593,25 +593,30 @@ class BatchSynthesizer(BaseSynthesizer):
 
         # new interaction optimization parameters
         parser.add_argument('-bs', '--batch_size', type=int, default=64)
+
+        parser.add_argument('--mode', default='advanced', help='use default settings for demo or not')
         return parser
 
 def main():
     parser = BatchSynthesizer.get_parser()
     args = parser.parse_args()
 
-    # For debug
-    behave_params_root = paths.BEHAVE_PARAMS_ROOT
-    args.seqs_pattern = 'Date01_Sub01*stool*'
+    # For demo
+    if args.mode == 'demo':
+        args.seqs_pattern = 'Date01_Sub01*stool*'
+        args.source = 'objaverse'
+        args.object = 'stool' # behave (interaction) dataset object name
+        args.newshape_category = 'stool' # shape dataset object category, can only be the keys from object2synset dict
+        args.outfolder = f'outputs/params/test-{args.object}'
+        args.batch_size = 16
+        args.iterations = 500
+        args.end = 16
+
+    # path setup
     smplh_root = SMPL_MODEL_ROOT
     args.newshape_root = paths.SHAPENET_SIMPLIFIED_ROOT
     args.newshape_corr_root = paths.NEWSHAPE_CORR_ROOT
-    args.source = 'objaverse'
-    args.object = 'stool' # behave (interaction) dataset object name
-    args.newshape_category = 'stool' # shape dataset object category, can only be the keys from object2synset dict
-    args.outfolder = f'outputs/params/test-{args.object}'
-    args.batch_size = 16
-    args.iterations = 500
-    args.end = 64
+    behave_params_root = paths.BEHAVE_PARAMS_ROOT
 
     temp_path = get_template_path(args.object, paths.BEHAVE_OBJECTS_ROOT)
     # behave object points that have one to one corr to new shapes, this should align with the object mesh template above
