@@ -265,12 +265,15 @@ class BaseRenderer:
                 bpy.data.objects.remove(obj, do_unlink=True)
         # delete all the materials
         for material in bpy.data.materials:
+            material.user_clear() # remove fake users
             bpy.data.materials.remove(material, do_unlink=True)
         # delete all the textures
         for texture in bpy.data.textures:
+            texture.user_clear() # remove fake users
             bpy.data.textures.remove(texture, do_unlink=True)
         # delete all the images
         for image in bpy.data.images:
+            image.user_clear() # remove fake users
             bpy.data.images.remove(image, do_unlink=True)
 
     def reinit_light(self):

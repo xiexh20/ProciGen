@@ -17,7 +17,7 @@ import paths as paths
 
 class SynzResultLoader:
     "load parameters from the results of synz/synz_batch.py, with possibly some augmentations"
-    def __init__(self, params_folder, newshape_root, procigen_asset_root, source, verbose=False):
+    def __init__(self, params_folder, newshape_root, source, verbose=False):
         """
 
         :param params_folder: path to optimized H+O parameters, output from synz_batch
@@ -38,7 +38,7 @@ class SynzResultLoader:
             print(f"In total {len(self.param_files)} parameters found.")
 
         self.landmark = BodyLandmarks(paths.PROCIGEN_ASSET_ROOT)
-        self.scan_geners = json.load(open(f'{procigen_asset_root}/mgn-scan-gender.json'))
+        self.scan_geners = json.load(open(f'{paths.PROCIGEN_ASSET_ROOT}/mgn-scan-gender.json'))
         self.verbose = verbose
         self.source = source
 
@@ -165,11 +165,11 @@ class SynzResultLoader:
 
     @staticmethod
     def simplify_object(obj: Mesh, target_face=2500, verbose=False) -> Mesh:
-        from open3d.cpu.pybind.geometry import TriangleMesh
-        from open3d.cpu.pybind.utility import Vector3dVector, Vector3iVector
+        from open3d.geometry import TriangleMesh
+        from open3d.utility import Vector3dVector, Vector3iVector
 
         verts = Vector3dVector(obj.v)
-        faces = Vector3iVector(obj.f)
+        faces = Vector3iVector(obj.f.astype(int))
         if len(faces) < target_face:
             return obj
         mesh_o3d = TriangleMesh(vertices=verts, triangles=faces)

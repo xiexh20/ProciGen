@@ -6,6 +6,8 @@ import glob
 import sys, os
 import time
 
+import trimesh
+
 sys.path.append(os.getcwd())
 from os.path import join, isfile, basename
 import numpy as np
@@ -155,12 +157,14 @@ class NewHOIRenderer(BlenderRerenderer):
         # smpld_reg.write_ply(join(person_folder, 'person.ply')) # psuedo point cloud
         os.makedirs(join(person_folder, save_name), exist_ok=True)
         smpl = ret['smpl']
-        smpl.write_ply(join(person_folder, save_name, 'person_fit.ply'))
+        trimesh.Trimesh(smpl.v, smpl.f, process=False).export(join(person_folder, save_name, 'person_fit.ply'))
+        # smpl.write_ply(join(person_folder, save_name, 'person_fit.ply'))
         obj_folder = join(frame_folder, obj_name, save_name)
         os.makedirs(obj_folder, exist_ok=True)
         obj_R, obj_t = ret['obj_mat'][:3, :3], ret['obj_mat'][:3, 3]
         obj_simplified.v = np.matmul(obj_simplified.v, obj_R.T) + obj_t
-        obj_simplified.write_ply(join(obj_folder, f'{obj_name}_fit.ply'))
+        trimesh.Trimesh(obj_simplified.v, obj_simplified.f, process=False).export(join(obj_folder, f'{obj_name}_fit.ply'))
+        # obj_simplified.write_ply(join(obj_folder, f'{obj_name}_fit.ply'))
 
         # save parameters
         outfile = join(person_folder, save_name, 'person_fit.pkl')
@@ -209,7 +213,7 @@ class NewHOIRenderer(BlenderRerenderer):
         parser.add_argument('-p', '--params_folder', required=True, help='folder to optimized parameters')
         parser.add_argument('-c', '--camera_config', default='assets/behave_cams')
         parser.add_argument('-fs', '--start', default=0, type=int)
-        parser.add_argument('-fe', '--end', default=None, type=int)
+        parser.add_argument('-fe', '--end', default=10, type=int)
         parser.add_argument('-src', '--source', choices=['objaverse', 'shapenet', 'abo'], default='shapenet',
                             help='source dataset of the new objects')
 
@@ -244,7 +248,7 @@ def main():
     else:
         newshape_root = paths.OBJAVERSE_MESHES_ROOT
 
-    loader = SynzResultLoader(args.params_folder, newshape_root, paths.PROCIGEN_ASSET_ROOT)
+    loader = SynzResultLoader(args.params_folder, newshape_root, args.source)
     renderer = NewHOIRenderer(args.camera_config, camera_count, loader=loader,
                               reso_x=args.resox, reso_y=args.resoy, icap=args.icap)
     renderer.render_folder(args.source, args.out_dir, args.obj_name,
