@@ -3,30 +3,28 @@ base class to render using blender
 Author: Xianghui, July 08, 2024
 Cite: Template Free Reconstruction of Human-object Interaction with Procedural Interaction Generation
 """
-import random
 import sys, os
 os.environ["OPENCV_IO_ENABLE_OPENEXR"]="1" # to allow reading exr image
 import cv2
 
 sys.path.append(os.getcwd())
 import bpy
-import bmesh
-import mathutils
 from mathutils import Vector
 from os.path import join
 import numpy as np
 import os.path as osp
-import open3d as o3d
 import math
 
 from data.kinect_transform import CameraTransform
 from lib_smpl.th_hand_prior import load_grab_prior
+import paths as paths
 bpy_version = bpy.app.version_string
+
 
 class BaseRenderer:
     def __init__(self, camera_config, camera_count, ext='jpg',
-                 synthesizer=None, reso_x=2048, reso_y=1536, icap=False):
-        self.synthesizer = synthesizer # HOI synthesizer, useful for synthesize new objects
+                 loader=None, reso_x=2048, reso_y=1536, icap=False):
+        self.loader = loader # HOI synthesizer, useful for synthesize new objects
         self.camera_config = camera_config
         self.cam_transform = CameraTransform(camera_config, camera_count)
         self.camera_count = camera_count
@@ -77,10 +75,11 @@ class BaseRenderer:
         bpy.context.scene.render.image_settings.quality = 100
 
         # Build scene
-        bpy.context.scene.world.color = (0, 0, 0)
+        bpy.context.scene.world.color = (1.0, 1.0, 1.0) if bpy_version >= '3.0' else (0, 0, 0) # bpy 3.0+ seems to have different ambient color setting
         bpy.context.scene.render.film_transparent = True
         self.init_lights(depth=2.5)
-        bpy.context.scene.world.light_settings.use_ambient_occlusion = True  # enable ambient light
+        if bpy_version < '3.0':
+            bpy.context.scene.world.light_settings.use_ambient_occlusion = True  # enable ambient light
 
         # Add camera
         self.add_camera()
@@ -103,7 +102,8 @@ class BaseRenderer:
         render_layer = scene_node_tree.nodes.new(type="CompositorNodeRLayers")
         output_rgb = scene_node_tree.nodes.new(type="CompositorNodeOutputFile")
         # for bpy>3.0, empty means ./, hence we need / to use abs path. if set to empty, will be /tmp/
-        output_rgb.base_path = '/' if bpy_version > '3.0' else ''
+        # output_rgb.base_path = '/' if bpy_version > '3.0' and bpy_version < '4.0' else ''
+        output_rgb.base_path = ''
         output_rgb.file_slots[0].use_node_format = True
         output_rgb.format.file_format = "JPEG" if self.ext == 'jpg' else "PNG"
         output_rgb.format.color_mode = 'RGB'
@@ -111,7 +111,8 @@ class BaseRenderer:
         self.render_layer, self.output_rgb = render_layer, output_rgb  # save for later manipulation
 
         output_depth = scene_node_tree.nodes.new(type="CompositorNodeOutputFile")
-        output_depth.base_path = '/' if bpy_version > '3.0' else ''
+        # output_depth.base_path = '/' if bpy_version > '3.0' and bpy_version < '4.0' else ''
+        output_depth.base_path = ''
         output_depth.file_slots[0].use_node_format = True
         output_depth.format.file_format = "OPEN_EXR"
         output_depth.format.color_depth = '16'
@@ -264,12 +265,15 @@ class BaseRenderer:
                 bpy.data.objects.remove(obj, do_unlink=True)
         # delete all the materials
         for material in bpy.data.materials:
+            material.user_clear() # remove fake users
             bpy.data.materials.remove(material, do_unlink=True)
         # delete all the textures
         for texture in bpy.data.textures:
+            texture.user_clear() # remove fake users
             bpy.data.textures.remove(texture, do_unlink=True)
         # delete all the images
         for image in bpy.data.images:
+            image.user_clear() # remove fake users
             bpy.data.images.remove(image, do_unlink=True)
 
     def reinit_light(self):
@@ -300,6 +304,75 @@ class BaseRenderer:
         if not found:
             raise RuntimeError("no objects in scene to compute bounding box for")
         return Vector(bbox_min), Vector(bbox_max)
+
+    def import_object2blender(self, dname, ins, obj_mat, synset_id):
+        """
+        import object mesh/scene into blender scene
+        :param dname: dataset name of the object
+        :param ins: instance id of the object
+        :param obj_mat: 4x4 transformation applied to the object
+        :param synset_id: object class/synset id
+        :return:
+        :rtype:
+        """
+        blender_name_hum, blender_name_obj = 'procigen-hum', 'procigen-obj'
+        if dname == 'shapenet':
+            # simply apply the parameter
+            mesh_file = osp.join(paths.SHAPENET_ROOT, synset_id, ins, 'models/model_normalized.obj')
+            bpy.ops.import_scene.obj(filepath=mesh_file, axis_forward='Y', axis_up='Z')
+            obj_object = bpy.context.selected_objects[-1]
+            obj_object.name = blender_name_obj  # specify the name for the imported one
+            bpy.ops.object.shade_smooth()
+            obj = bpy.data.objects[blender_name_obj]  # reselect
+            obj.select_set(True)
+            self.mesh_names.append(blender_name_obj)  # this allows deletion
+            self.apply_transform(obj, obj_mat)  # now apply transformation to the object
+        elif dname == 'objaverse':
+            # use objaverse lib to get path
+            import objaverse
+            uids = [ins]
+            # Get local glb file path, if non-existent, will download using uid.
+            # Warning: objaverse downloads are saved to home directory by default, if that is not desired,
+            # change the BASE_PATH in objaverse.__init__.py file.
+            objs = objaverse.load_objects(uids, download_processes=1)
+            obj_values = list(objs.values())
+            assert len(obj_values) == 1, f'invalid object paths found: {obj_values}'
+            glb_path = obj_values[0]
+            # Note: the saved object transformation is always w.r.t normalized object meshes
+            # Option 1: do normalization inside blender after loading
+            self.add_glb_object(glb_path, obj_mat, normalize=True)
+
+            # Option 2: export a normalized glb file, and reload to blender, should also work.
+            # export a normalized glb file
+            # glb_path_norm = str(glb_path).replace('/glbs/', '/glbs-normalized/')
+            # if not osp.isfile(glb_path_norm):
+            #     cmd = f'blender -b -P render/blender_export.py -- --object_path {glb_path} --normalize --output_format glb'
+            #     os.system(cmd)
+            # self.add_glb_object(glb_path_norm, obj_mat, normalize=False)
+        else:
+            # Note: for abo dataset, the saved object transformation is w.r.t original glb file, w/o further processing.
+            glb_path = f'{paths.ABO_ROOT}/{ins}.glb'
+            self.add_glb_object(glb_path, obj_mat, normalize=False)
+        return blender_name_hum
+
+    def add_glb_object(self, glb_path, obj_mat, normalize):
+        """
+        load object from a glb file
+        :param glb_path: glb file path
+        :param obj_mat: the transformation applied to the object after loading
+        :param normalize: normalize the scene or not, for objaverse, it should be normalized
+        :return:
+        """
+        bpy.ops.import_scene.gltf(filepath=glb_path, merge_vertices=True)
+        if normalize:
+            # this normalization
+            self.normalize_scene()  # do not do normalization, since the glb file is already normalized!
+        # apply transform to the object
+        for obj in self.scene_root_objects():
+            if obj.type in ["CAMERA", 'LIGHT']:
+                continue  # do not change lighting or camera!
+            original_mat = np.array(obj.matrix_world)
+            obj.matrix_world = (obj_mat @ original_mat).T
 
     @staticmethod
     def scene_meshes():

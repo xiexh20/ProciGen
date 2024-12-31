@@ -8,7 +8,7 @@ Cite: CHORE: Contact, Human and Object REconstruction from a single RGB image. E
 import numpy as np
 import sys, os
 sys.path.append(os.getcwd())
-from psbody.mesh import Mesh
+from lib_mesh.mesh import Mesh
 import torch
 
 from lib_smpl.th_hand_prior import mean_hand_pose
@@ -65,6 +65,9 @@ class SMPLHGenerator:
 
         betas, pose, trans = beta_init, pose_init, centers  # init SMPL with the translation
 
+        if offsets is not None and isinstance(offsets, np.ndarray):
+            offsets = torch.from_numpy(offsets)
+
         smplh = SMPLPyTorchWrapperBatch(SMPL_MODEL_ROOT, batch_sz, betas, pose, trans, offsets,
                                         gender=gender, num_betas=10, hands=True, device=device).to(device)
 
@@ -94,6 +97,6 @@ class SMPLHGenerator:
         else:
             pose_init = torch.tensor(poses, dtype=torch.float32)
         betas = torch.tensor(betas, dtype=torch.float32)
-        smplh = SMPLPyTorchWrapperBatch(SMPL_MODEL_ROOT, batch_sz, betas, pose_init, trans,
+        smplh = SMPLPyTorchWrapperBatch(SMPL_MODEL_ROOT, batch_sz, betas.cpu(), pose_init.cpu(), trans.cpu(),
                                         gender=gender, num_betas=10, hands=True, device=device).to(device)
         return smplh

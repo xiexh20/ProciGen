@@ -136,7 +136,7 @@ def get_template_path(behave_path, obj_name):
 
 def load_scan_centered(scan_path, cent=True):
     """load a scan and centered it around origin"""
-    from psbody.mesh import Mesh
+    from lib_mesh.mesh import Mesh
     scan = Mesh()
     # print(scan_path)
     scan.load_from_file(scan_path)

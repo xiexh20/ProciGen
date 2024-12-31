@@ -95,7 +95,7 @@ def load_from_obj(self, filename):
         self.fn = np.array(fn) - 1
     self.segm = segm
     self.landm_raw_xyz = landm_raw_xyz
-    self.recompute_landmark_indices()
+    self.recompute_landmark_indices() # no need for this
 
     if hasattr(self, 'materials_file'):
         for line in self.materials_file:
