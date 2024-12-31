@@ -17,10 +17,12 @@ from torch.optim import Adam
 from pytorch3d.transforms import axis_angle_to_matrix
 from pytorch3d.structures import Meshes
 
+from lib_smpl.const import SMPL_MODEL_ROOT
 from lib_smpl.smpl_generator import SMPLHGenerator
 from lib_smpl.wrapper_pytorch import SMPLPyTorchWrapperBatchSplitParams
 from lib_mesh.mesh import Mesh
 from synz.synz_base import BaseSynthesizer
+from synz.mesh_paths import get_template_path, get_corr_mesh_file # TODO: update these path as relative paths
 import render.paths as paths
 
 
@@ -594,16 +596,14 @@ class BatchSynthesizer(BaseSynthesizer):
         return parser
 
 def main():
-    from synz.mesh_paths import get_template_path, get_corr_mesh_file # TODO: update these path as relative paths
-
     parser = BatchSynthesizer.get_parser()
     args = parser.parse_args()
 
     # For debug
     behave_params_root = '/scratch/inf0/user/xxie/behave-30fps'
     args.seqs_pattern = 'Date01_Sub01*chairblack*'
-    smplh_root = '/BS/xxie2020/static00/mysmpl/smplh/'
-    args.newshape_root = '/BS/databases24/ShapeNetV2-simplified'
+    smplh_root = SMPL_MODEL_ROOT
+    args.newshape_root = paths.SHAPENET_SIMPLIFIED_ROOT
     args.newshape_corr_root = '/BS/xxie-2/static00/shapenet/'
     args.object = 'chairblack'
     args.source = 'shapenet'
@@ -613,10 +613,10 @@ def main():
     args.iterations = 500
     args.end = 64
 
-    temp_path = get_template_path(args.object)
+    temp_path = get_template_path(args.object, paths.BEHAVE_OBJECTS_ROOT)
     # behave object points that have one to one corr to new shapes, this should align with the object mesh template above
     corr_mesh_file = get_corr_mesh_file(args.object)
-    corr_mesh_file = osp.join('/BS/xxie-2/work/DualSDF2/', corr_mesh_file)
+    corr_mesh_file = osp.join(paths.BEHAVE_CORR_ROOT, corr_mesh_file)
     assert args.object in args.seqs_pattern, f'the given object name does not compatible with the sequence pattern({args.seqs_pattern}) to sample from!'
 
     synzer = BatchSynthesizer(args.seqs_pattern,

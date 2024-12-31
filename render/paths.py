@@ -8,20 +8,20 @@ from os.path import join, dirname, basename
 SHAPENET_ROOT = '/BS/databases19/ShapeNet/ShapeNetCore.v2' # root to shapenet, format: ROOT/synset_id/ins_name/model/model_normalized.obj
 OBJAVERSE_ROOT = '/BS/databases24/objaverse' # ROOT path to objaverse, this is used to save exported ply file
 ABO_ROOT = "/BS/databases23/abo-3dmodels/3dmodels" # root path to all abo glb files, format: ROOT/model_uid.glb
-PROCIGEN_ROOT = '/BS/databases24/ProciGen/' # root path to procigen sequences
+PROCIGEN_ROOT = '/BS/databases24/ProciGen/' # root path to all procigen sequences
 MGN_ROOT = '/BS/databases24/mgn-smpld' # root path to SMPLD of MGN scans, format of texture image: ROOT/scan_id/scan_id.png
 
-PROCIGEN_ASSET_ROOT = '/BS/xxie-6/static00/ProciGen-assets' # root path to additional procigen assets
-
+PROCIGEN_ASSET_ROOT = '/BS/xxie-6/static00/ProciGen-assets' # root path to additional procigen assets, modify this to downloaded ProciGen-assets.tar
 BEHAVE_OBJECTS_ROOT = '/BS/xxie-5/static00/behave_release/objects' # path to BEHAVE templates, from this file: https://datasets.d2.mpi-inf.mpg.de/cvpr22behave/objects.zip
+
 BEHAVE_CORR_ROOT = f'{PROCIGEN_ASSET_ROOT}/corr-behave-objs' # path to the correspondence points for behave objects
 
 # paths for object shape datasets, these files can be downloaded, see
-SHAPENET_SIMPLIFIED_ROOT = '/BS/databases24/ShapeNetV2-simplified'  # path to simplified mesh path
+SHAPENET_SIMPLIFIED_ROOT = f'{PROCIGEN_ASSET_ROOT}/new-shape-meshes'  # path to simplified mesh path
 ABO_MESHES_ROOT = SHAPENET_SIMPLIFIED_ROOT # path to abo exported meshes
 OBJAVERSE_MESHES_ROOT = SHAPENET_SIMPLIFIED_ROOT
 
-NEWSHAPE_CORR_ROOT = '/BS/xxie-2/static00/shapenet/' # root path to autoencoder output files for new object shapes
+NEWSHAPE_CORR_ROOT = f'{PROCIGEN_ASSET_ROOT}/corr-new-shapes' # root path to autoencoder output files for new object shapes
 
 class ScanPath:
     "handling scan paths"

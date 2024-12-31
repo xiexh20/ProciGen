@@ -141,6 +141,7 @@ class SynzResultLoader:
     def load_obj_mesh(self, ho_params):
         """
         load  mesh of the new object shape, without doing any transformation
+        this is the same as in synz_base.BaseSynthesizer.load_newshape()
         these meshes are self processed mesh files, they are packed in a tar file
         how these meshes are obtained?
             -shapenet: first waterproof the mesh, then simplify them
@@ -154,7 +155,8 @@ class SynzResultLoader:
             obj_file = osp.join(self.newshape_root, 'abo-watertight', ho_params['ins_name'] + "_fused.obj")
         else:
             # this is for /BS/databases24/objaverse/classified-plys
-            obj_file = osp.join(self.newshape_root, ho_params['synset_id'], ho_params['ins_name'] + ".ply")
+            # obj_file = osp.join(self.newshape_root, ho_params['synset_id'], ho_params['ins_name'] + ".ply")
+            obj_file = osp.join(self.newshape_root, ho_params['synset_id'], f'{ho_params["ins_name"]}_fused.obj')
         if self.verbose:
             print("Loading new object shape from", obj_file)
         obj_mesh = Mesh(filename=obj_file)

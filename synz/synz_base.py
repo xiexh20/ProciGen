@@ -2,30 +2,22 @@
 base interaction synthesizer
 """
 import sys, os
-from tabnanny import verbose
 
 sys.path.append(os.getcwd())
 import numpy as np
 from lib_mesh.mesh import Mesh
-import igl, cv2
+import igl
 import os.path as osp
 import trimesh, json
-from tqdm import tqdm
 import open3d as o3d
 from pytorch3d.renderer import look_at_view_transform
-from pytorch3d.transforms import axis_angle_to_matrix
 
 import torch
-from torch.optim import Adam
-from lib_smpl.smpl_generator import SMPLHGenerator
-from lib_smpl.wrapper_pytorch import SMPLPyTorchWrapperBatchSplitParams
-import torch.nn as nn
 import pickle as pkl
 
 from mesh_intersection.bvh_search_tree import BVH
 import mesh_intersection.loss as collisions_loss
 
-from lib_smpl import get_smpl
 from lib_smpl import SMPL_Layer
 from synz.interaction_sampler import InteractionSampler
 from synz.geometry import GeometryUtils
@@ -60,7 +52,8 @@ class BaseSynthesizer:
                                        gender='female', hands=True)
 
         # Load object mesh template for the pose sampled from InteractionSampler
-        self.obj_temp = Mesh(filename=obj_temp_path)  # this is always centered, i.e. no other transformation required to use the pose parameters
+        self.obj_temp = Mesh(filename=obj_temp_path)
+        self.obj_temp.v = self.obj_temp.v - np.mean(self.obj_temp.v, axis=0)
         o3d_mesh = o3d.geometry.TriangleMesh(o3d.utility.Vector3dVector(self.obj_temp.v),
                                              o3d.utility.Vector3iVector(self.obj_temp.f))
         self.objv_normals = np.array(o3d_mesh.compute_vertex_normals())  # object vertex normals
@@ -71,10 +64,9 @@ class BaseSynthesizer:
         self.newshape_corr_root = newshape_corr_root  # path to all corr files, i.e. output from AE
         self.tar_obj_verts = 8000  # desired number of object vertices for optimization
         # map from object class name to corresponding synset name in the corr_root folders
-        self.object2synset = {'aeroplane': '02691156', 'bench': '02828884', 'cabinet': '02933112', 'car': '02958343',
-                              'chair': '03001627', 'display': '03211117', 'lamp': '03636649', 'speaker': '03691459',
-                              'rifle': '04090263', 'sofa': '04256520', 'table': '04379243', 'telephone': '04401088',
-                              'watercraft': '04530566',
+        self.object2synset = {'chair': '03001627',
+                              'display': '03211117',
+                              'table': '04379243',
                               "trashbin": "02747177",
                               "toolbox": "02773838",
                               "monitor": "03211117",
@@ -177,8 +169,16 @@ class BaseSynthesizer:
         return N, los
 
     def load_newshape(self, args, shape_ind, shapes, synset, num_faces=20000):
-        "load and simplify new shape meshes"
-        # TODO: use relative path
+        """
+        load and simplify new shape meshes
+        these meshes are processed mesh files by my self, they are packed in a tar file
+        they usually have 15k to 20k faces, adequate enough for optimization
+        how these meshes are obtained?
+            -shapenet: first waterproof the mesh, then simplify them
+            -objaverse and abo: export the mesh from glb file, waterproof and then simplify
+        :return:
+        :rtype:
+        """
         if args.source == 'shapenet':
             file_orig = osp.join(self.newshape_root, synset, shapes[shape_ind], "models/model_normalized_fused.obj")
         elif args.source == 'abo':
@@ -189,7 +189,7 @@ class BaseSynthesizer:
             print("Loading mesh from", file_orig, shape_ind)
         try:
             # use igl to load
-            mm = igl.read_obj(file_orig)  # lots of problems with table
+            mm = igl.read_obj(file_orig)
             shape_orig = Mesh(mm[0], mm[3])  # this fix the problem!
         except Exception as e:
             print(e)
