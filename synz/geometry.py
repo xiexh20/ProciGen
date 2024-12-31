@@ -5,7 +5,7 @@ Author: Xianghui, December 16, 2021
 import time
 
 import numpy as np
-from psbody.mesh import Mesh
+from lib_mesh.mesh import Mesh
 
 from scipy.spatial.transform import Rotation
 
@@ -15,8 +15,8 @@ class GeometryUtils:
 
     @staticmethod
     def simplify_object(obj:Mesh, target_face=8000)->Mesh:
-        from open3d.cpu.pybind.geometry import TriangleMesh # this works for 0.12.0
-        from open3d.cpu.pybind.utility import Vector3dVector, Vector3iVector
+        from open3d.geometry import TriangleMesh # this works for 0.12.0
+        from open3d.utility import Vector3dVector, Vector3iVector
         if len(obj.f) <= target_face:
             return obj
 

@@ -3,15 +3,12 @@ base class to render using blender
 Author: Xianghui, July 08, 2024
 Cite: Template Free Reconstruction of Human-object Interaction with Procedural Interaction Generation
 """
-import random
 import sys, os
 os.environ["OPENCV_IO_ENABLE_OPENEXR"]="1" # to allow reading exr image
 import cv2
 
 sys.path.append(os.getcwd())
 import bpy
-import bmesh
-import mathutils
 from mathutils import Vector
 from os.path import join
 import numpy as np
@@ -20,8 +17,9 @@ import math
 
 from data.kinect_transform import CameraTransform
 from lib_smpl.th_hand_prior import load_grab_prior
-import render.paths as paths
+import paths as paths
 bpy_version = bpy.app.version_string
+
 
 class BaseRenderer:
     def __init__(self, camera_config, camera_count, ext='jpg',
@@ -80,7 +78,8 @@ class BaseRenderer:
         bpy.context.scene.world.color = (1.0, 1.0, 1.0) if bpy_version >= '3.0' else (0, 0, 0) # bpy 3.0+ seems to have different ambient color setting
         bpy.context.scene.render.film_transparent = True
         self.init_lights(depth=2.5)
-        bpy.context.scene.world.light_settings.use_ambient_occlusion = True  # enable ambient light
+        if bpy_version < '3.0':
+            bpy.context.scene.world.light_settings.use_ambient_occlusion = True  # enable ambient light
 
         # Add camera
         self.add_camera()

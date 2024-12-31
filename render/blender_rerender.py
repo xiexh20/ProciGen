@@ -9,7 +9,6 @@ Author: Xianghui, July 08, 2024
 Cite: Template Free Reconstruction of Human-object Interaction with Procedural Interaction Generation
 """
 import glob
-import json
 import sys, os
 
 import torch
@@ -18,14 +17,14 @@ import torch
 sys.path.append(os.getcwd())
 import bpy
 import cv2
-from os.path import join, isfile, basename
+from os.path import join
 import numpy as np
 import os.path as osp
 from tqdm import tqdm
 import pickle as pkl
 
-import render.paths as paths
-from render.blender_base import BaseRenderer, bpy_version
+import paths as paths
+from render.blender_base import BaseRenderer
 from render.utils import get_shape_datasetname
 from lib_smpl import get_smpl
 from lib_mesh.mesh import Mesh
@@ -134,8 +133,8 @@ class BlenderRerenderer(BaseRenderer):
         parser.add_argument('-fe', '--end', default=10, type=int)
 
         # Render parameters, for behave use x:y=4:3, for InterCap use x:y=16:9
-        parser.add_argument('-resox', type=int, default=2048)
-        parser.add_argument('-resoy', type=int, default=1536)
+        parser.add_argument('-resox', type=int, default=2048//2)
+        parser.add_argument('-resoy', type=int, default=1536//2)
 
         return parser
 

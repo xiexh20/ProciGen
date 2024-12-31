@@ -9,10 +9,14 @@ SHAPENET_ROOT = '/BS/databases19/ShapeNet/ShapeNetCore.v2' # root to shapenet, f
 OBJAVERSE_ROOT = '/BS/databases24/objaverse' # ROOT path to objaverse, this is used to save exported ply file
 ABO_ROOT = "/BS/databases23/abo-3dmodels/3dmodels" # root path to all abo glb files, format: ROOT/model_uid.glb
 PROCIGEN_ROOT = '/BS/databases24/ProciGen/' # root path to all procigen sequences
-MGN_ROOT = '/BS/databases24/mgn-smpld' # root path to SMPLD of MGN scans, format of texture image: ROOT/scan_id/scan_id.png
+MGN_ROOT = '/home/ubuntu/Downloads//mgn-smpld' # root path to SMPLD of MGN scans, format of texture image: ROOT/scan_id/scan_id.png
 
-PROCIGEN_ASSET_ROOT = '/BS/xxie-6/static00/ProciGen-assets' # root path to additional procigen assets, modify this to downloaded ProciGen-assets.tar
-BEHAVE_OBJECTS_ROOT = '/BS/xxie-5/static00/behave_release/objects' # path to BEHAVE templates, from this file: https://datasets.d2.mpi-inf.mpg.de/cvpr22behave/objects.zip
+PROCIGEN_ASSET_ROOT = '/home/ubuntu/Downloads/ProciGen-assets-demo' # root path to additional procigen assets, modify this to downloaded ProciGen-assets.tar
+SMPL_ASSETS_ROOT = PROCIGEN_ASSET_ROOT
+SMPL_MODEL_ROOT = "/home/ubuntu/Downloads/smplh"
+
+BEHAVE_OBJECTS_ROOT = '/home/ubuntu/Downloads/behave_objects/objects' # path to BEHAVE templates, from this file: https://datasets.d2.mpi-inf.mpg.de/cvpr22behave/objects.zip
+BEHAVE_PARAMS_ROOT = '/home/ubuntu/Downloads/behave-30fps' # path to BEHAVE parameters, from https://datasets.d2.mpi-inf.mpg.de/cvpr22behave/behave-30fps-params-v1.tar
 
 BEHAVE_CORR_ROOT = f'{PROCIGEN_ASSET_ROOT}/corr-behave-objs' # path to the correspondence points for behave objects
 

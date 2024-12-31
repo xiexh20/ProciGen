@@ -23,7 +23,7 @@ from lib_smpl.wrapper_pytorch import SMPLPyTorchWrapperBatchSplitParams
 from lib_mesh.mesh import Mesh
 from synz.synz_base import BaseSynthesizer
 from synz.mesh_paths import get_template_path, get_corr_mesh_file # TODO: update these path as relative paths
-import render.paths as paths
+import paths as paths
 
 
 class BatchSynthesizer(BaseSynthesizer):
@@ -600,14 +600,14 @@ def main():
     args = parser.parse_args()
 
     # For debug
-    behave_params_root = '/scratch/inf0/user/xxie/behave-30fps'
-    args.seqs_pattern = 'Date01_Sub01*chairblack*'
+    behave_params_root = paths.BEHAVE_PARAMS_ROOT
+    args.seqs_pattern = 'Date01_Sub01*stool*'
     smplh_root = SMPL_MODEL_ROOT
     args.newshape_root = paths.SHAPENET_SIMPLIFIED_ROOT
-    args.newshape_corr_root = '/BS/xxie-2/static00/shapenet/'
-    args.object = 'chairblack'
-    args.source = 'shapenet'
-    args.newshape_category = 'chair'
+    args.newshape_corr_root = paths.NEWSHAPE_CORR_ROOT
+    args.source = 'objaverse'
+    args.object = 'stool' # behave (interaction) dataset object name
+    args.newshape_category = 'stool' # shape dataset object category, can only be the keys from object2synset dict
     args.outfolder = f'outputs/params/test-{args.object}'
     args.batch_size = 16
     args.iterations = 500
@@ -626,7 +626,9 @@ def main():
                               corr_mesh_file,
                               newshape_corr_root=args.newshape_corr_root,
                               newshape_root=args.newshape_root,
+                              debug=False
                               )
+    assert args.newshape_category in synzer.object2synset.keys(), f'the given new shape category is unknown!'
     synzer.synthesize(args)
     print('all done')
 

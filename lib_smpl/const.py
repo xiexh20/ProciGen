@@ -2,10 +2,10 @@
 some constants for smpl and smplh models
 created by Xianghui, 12, January, 2022
 """
-
+import paths
 # Local paths to SMPL models, modify before you run.
-SMPL_ASSETS_ROOT = "assets"
-SMPL_MODEL_ROOT = "/BS/xxie2020/static00/mysmpl/smplh"
+SMPL_ASSETS_ROOT = paths.SMPL_ASSETS_ROOT
+SMPL_MODEL_ROOT = paths.SMPL_MODEL_ROOT
 
 
 # related to smpl and smplh parameter count

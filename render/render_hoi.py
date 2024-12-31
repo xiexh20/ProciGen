@@ -3,23 +3,18 @@ render newly optimized HOI interactions for shapenet objects
 """
 import argparse
 import glob
-import json
 import sys, os
 import time
 
 sys.path.append(os.getcwd())
-import bpy
-import cv2
 from os.path import join, isfile, basename
 import numpy as np
-import os.path as osp
 from tqdm import tqdm
 import pickle as pkl
 
 from lib_mesh.mesh import Mesh
-import render.paths as paths
-from render.paths import ScanPath
-from render.blender_base import BaseRenderer
+import paths as paths
+from paths import ScanPath
 from render.blender_rerender import BlenderRerenderer
 from render.synz_loader import SynzResultLoader
 

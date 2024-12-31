@@ -9,7 +9,6 @@ from lib_mesh.mesh import Mesh
 import igl
 import os.path as osp
 import trimesh, json
-import open3d as o3d
 from pytorch3d.renderer import look_at_view_transform
 
 import torch
@@ -22,6 +21,7 @@ from lib_smpl import SMPL_Layer
 from synz.interaction_sampler import InteractionSampler
 from synz.geometry import GeometryUtils
 from synz import viz_utils
+import paths
 
 
 class BaseSynthesizer:
@@ -52,12 +52,13 @@ class BaseSynthesizer:
                                        gender='female', hands=True)
 
         # Load object mesh template for the pose sampled from InteractionSampler
-        self.obj_temp = Mesh(filename=obj_temp_path)
+        mesh = trimesh.load_mesh(obj_temp_path, process=False)
+        self.obj_temp = Mesh(np.array(mesh.vertices), np.array(mesh.faces))
         self.obj_temp.v = self.obj_temp.v - np.mean(self.obj_temp.v, axis=0)
-        o3d_mesh = o3d.geometry.TriangleMesh(o3d.utility.Vector3dVector(self.obj_temp.v),
-                                             o3d.utility.Vector3iVector(self.obj_temp.f))
-        self.objv_normals = np.array(o3d_mesh.compute_vertex_normals())  # object vertex normals
-        self.corr_v = Mesh(filename=corr_mesh_file).v  # from ae-overfit-4060_chairblack_output_8000.ply
+        # o3d_mesh = o3d.geometry.TriangleMesh(o3d.utility.Vector3dVector(self.obj_temp.v),
+        #                                      o3d.utility.Vector3iVector(self.obj_temp.f))
+        # self.objv_normals = np.array(o3d_mesh.compute_vertex_normals())  # object vertex normals
+        self.corr_v = np.array(trimesh.load_mesh(corr_mesh_file, process=False).vertices)
 
         # path for new shapes from shapenet/abo/objaverse
         self.newshape_root = newshape_root  # watertight meshes
@@ -93,8 +94,7 @@ class BaseSynthesizer:
                               "obja-chair": "obja-chair"
 
                               }
-        # TODO: replace this with mgn path
-        self.scan_betas = pkl.load(open('/BS/xxie2020/work/SynHOI/assets/mgn-scan-betas.pkl', 'rb'))['betas']
+        self.scan_betas = pkl.load(open(f'{paths.PROCIGEN_ASSET_ROOT}/mgn-scan-betas.pkl', 'rb'))['betas']
 
         # config for intersection loss
         sigma = 0.5  # The height of the cone used to calculate the distance field loss.
@@ -127,7 +127,7 @@ class BaseSynthesizer:
         :rtype:
         """
         synset_id = self.object2synset[args.newshape_category]
-        new_shape_ids = json.load(open('assets/new-shape-ids.json')) # TODO: use given path
+        new_shape_ids = json.load(open(f'{paths.PROCIGEN_ASSET_ROOT}/new-shape-ids.json'))
         source = args.source
         if args.source == 'shapenet':
             if isinstance(synset_id, list):
@@ -312,9 +312,11 @@ class BaseSynthesizer:
 
         # vc_smpl = np.array([[0.65098039, 0.74117647, 0.85882353]]).repeat(len(smpl_verts), 0)
         if self.debug:
-            Mesh(smpl_verts, self.smplh_male.faces, vc=vc_smpl).write_ply(osp.join(outfolder, f'{prefix}smpl_orig.ply'))
+            trimesh.Trimesh(smpl_verts, self.smplh_male.faces, vertex_colors=vc_smpl, process=False).export(osp.join(outfolder, f'{prefix}smpl_orig.ply'))
+            # Mesh(smpl_verts, self.smplh_male.faces, vc=vc_smpl).write_ply(osp.join(outfolder, f'{prefix}smpl_orig.ply'))
         if self.debug:
-            Mesh(obj_verts, [], vc=vc_obj).write_ply(osp.join(outfolder, f'{prefix}obj_orig.ply'))
+            trimesh.PointCloud(obj_verts, colors=vc_obj).export(osp.join(outfolder, f'{prefix}obj_orig.ply'))
+            # Mesh(obj_verts, [], vc=vc_obj).write_ply(osp.join(outfolder, f'{prefix}obj_orig.ply'))
             print('Original mesh saved to', outfolder)
         return cmap_cont, vc_obj, vc_smpl
 

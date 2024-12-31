@@ -12,7 +12,7 @@ from copy import deepcopy
 from lib_mesh.mesh import Mesh
 from lib_smpl.smpl_generator import SMPLHGenerator
 from lib_smpl.body_landmark import BodyLandmarks
-import render.paths as paths
+import paths as paths
 
 
 class SynzResultLoader:
