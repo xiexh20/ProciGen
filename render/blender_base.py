@@ -23,7 +23,7 @@ bpy_version = bpy.app.version_string
 
 class BaseRenderer:
     def __init__(self, camera_config, camera_count, ext='jpg',
-                 loader=None, reso_x=2048, reso_y=1536, icap=False):
+                 loader=None, reso_x=2048, reso_y=1536, icap=False, engine='CYCLES'):
         self.loader = loader # HOI synthesizer, useful for synthesize new objects
         self.camera_config = camera_config
         self.cam_transform = CameraTransform(camera_config, camera_count)
@@ -33,6 +33,7 @@ class BaseRenderer:
         self.reso_x, self.reso_y = reso_x, reso_y
         # init blender scene and saving settings
         self.debug = False
+        self.engine = engine
         self.icap = icap
         self.init_render()
         self.mesh_names = []
@@ -71,7 +72,7 @@ class BaseRenderer:
         scene.render.resolution_y = self.reso_y
         scene.render.resolution_percentage = 100
         bpy.context.scene.world.use_nodes = False
-        bpy.context.scene.render.engine = 'CYCLES' # use ray-tracing
+        bpy.context.scene.render.engine = self.engine # use ray-tracing with cycles
         bpy.context.scene.render.image_settings.quality = 100
 
         # Build scene

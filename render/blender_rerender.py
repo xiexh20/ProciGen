@@ -135,6 +135,7 @@ class BlenderRerenderer(BaseRenderer):
         # Render parameters, for behave use x:y=4:3, for InterCap use x:y=16:9
         parser.add_argument('-resox', type=int, default=2048//2)
         parser.add_argument('-resoy', type=int, default=1536//2)
+        parser.add_argument('--engine', default='CYCLES')
 
         return parser
 
@@ -146,7 +147,8 @@ if __name__ == '__main__':
     camera_count = 6 if icap else 4
     camera_config = 'assets/icap_cams' if icap else 'assets/behave_cams'
 
-    renderer = BlenderRerenderer(camera_config, camera_count, reso_x=args.resox, reso_y=args.resoy, icap=icap)
+    renderer = BlenderRerenderer(camera_config, camera_count, reso_x=args.resox, reso_y=args.resoy,
+                                 icap=icap, engine=args.engine)
 
     renderer.render_seq(args)
 
