@@ -75,7 +75,7 @@ Namely, each sequence is organized as follows:
 |--ROOT
 |----sequence_name
 |------info.json  # a file storing the calibration information for the sequence
-|------<frame_name>     # one frame folder
+|------<frame_name>     # one frame folder, name convention: <dummy index>-<scan id>
 |--------k*.color.jpg               # color images of the frame
 |--------k*.person_mask.png         # human masks
 |--------k*.obj_rend_mask.png       # object masks
