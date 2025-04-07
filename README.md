@@ -114,6 +114,11 @@ in your system for objaverse and ABO dataset. The code was tested with blender 2
 We use the camera parameters from BEHAVE and InterCap to render the synthesized interaction. The camera intrinsic and extrinsic are saved in `<sequence>/info.json` file. 
 For more details about reading and loading, please check [load intrinsics](https://github.com/xiexh20/ProciGen/blob/main/data/kinect_transform.py#L38), [extrinsics](https://github.com/xiexh20/ProciGen/blob/main/data/kinect_transform.py#L40).
 
+### Mapping to original BEHAVE sequence
+We provide the mapping from each ProciGen frame to the original BEHAVE frame in [this file](https://edmond.mpg.de/file.xhtml?fileId=311478&version=8.0). 
+The data format is `dict[ProciGen_seq][ProciGen_frame]: (BEHAVE_frame, is_30fps)`, the `is_30fps` is a boolean value indicating if the parameter is sampled from the 30fps BEHAVE data. e.g. ['Date04_Sub05_stool/t0071.400', True] denotes this ProciGen frame comes from the 30fps BEHAVE frame at Date04_Sub05_stool/t0071.400. Note that the mapping for sequence Date04_Subxx_chairblack_synzv2-03 is missing as this was created in the early stage of the project, hence the information was not saved. 
+
+
 ## Synthesize ProciGen
 We provide quick start example below, for more advanced usage, please refer to [synthesize ProciGen](./synz/synthesize_procigen.md).
 
