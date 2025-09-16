@@ -38,7 +38,7 @@ This code is tested on `python 3.10, ubuntu 22.04`. See below for details on ins
 If you want to only re-render the ProciGen sequences, the following steps are sufficient:
 ```shell 
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-pip install bpy==3.5.0
+pip install bpy==3.5.0 --extra-index-url https://download.blender.org/pypi
 pip install git+https://github.com/mattloper/chumpy # compatible with newer numpy version 
 pip install opencv-python trimesh tqdm open3d objaverse imageio-ffmpeg
 ```
